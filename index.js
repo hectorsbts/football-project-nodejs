@@ -1,7 +1,7 @@
 const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
-const { teams } = require('./footballFunctions');
+const { getTeams } = require('./footballFunctions');
 
 const app = express();
 const port = process.env.PORT;
@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 app.get('/teams', (req, res) => {
   res.set('Content-Type', 'application/json');
 
-  teams()
+  getTeams()
     .then((data) => {
       res.send(data);
     })
