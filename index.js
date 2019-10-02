@@ -1,7 +1,7 @@
 const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
-const pool = require("./db_pool");
+const { teams } = require('./footballFunctions');
 
 const app = express();
 const port = process.env.PORT;
@@ -9,21 +9,16 @@ const port = process.env.PORT;
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.get('/', (req, res) => {
-  // res.sendFile(path.join(__dirname, 'index.html'));
-  pool.getConnection((err,connection)=>{
-    res.set({"Content-Type":"application/json"})
-    if(err){
-      res.send({"Message":"Nel perro"});
-    }
-    connection.query("SELECT * FROM teams", (err,rows)=>{
-      connection.release();
-      if(err){
-        res.send({"Message":"Nel perro " + err.toString()});
-      }
-      res.send(rows);
+app.get('/teams', (req, res) => {
+  res.set('Content-Type', 'application/json');
+
+  teams()
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      res.send(err);
     });
-  });
 });
 
 // get images
