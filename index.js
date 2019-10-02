@@ -10,7 +10,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.get('/teams', (req, res) => {
-  res.set('Content-Type', 'application/json');
+  res.set({
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+  });
 
   getTeams()
     .then((data) => {
