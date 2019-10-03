@@ -5,7 +5,7 @@ const {
   environment,
 } = require('./bootstrap');
 
-const { getTeams } = require('./db/footballFunctions');
+const { getTeams, addTeams, addScores } = require('./db/footballFunctions');
 
 const app = express();
 const port = environment.PORT;
@@ -28,6 +28,32 @@ app.get('/teams', (req, res) => {
     .catch((err) => {
       res.send(err);
     });
+});
+
+// add teams
+app.post('/teams', (req, res) => {
+  res.set({
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+  });
+
+  addTeams(req.body)
+    .then((result) => res.send(result))
+    .catch((err) => res.send(err));
+});
+
+// add scores
+app.post('/scores', (req, res) => {
+  res.set({
+    'Content-Type': 'application/json',    
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+  });
+
+  addScores(req.body)
+    .then((result) => res.send(result))
+    .catch((err) => res.send(err));
 });
 
 // get images
