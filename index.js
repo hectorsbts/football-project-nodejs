@@ -5,7 +5,7 @@ const {
   environment,
 } = require('./bootstrap');
 
-const { getTeams, addTeams, addScores } = require('./db/footballFunctions');
+const { getTeams, addTeam } = require('./db/footballFunctions');
 
 const app = express();
 const port = environment.PORT;
@@ -38,7 +38,7 @@ app.post('/teams', (req, res) => {
     'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
   });
 
-  addTeams(req.body)
+  addTeam(req.body)
     .then((result) => res.send(result))
     .catch((err) => res.send(err));
 });
