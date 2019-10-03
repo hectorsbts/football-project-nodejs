@@ -1,13 +1,14 @@
 const pool = require('./db_pool');
 
-function signUp(name, lastName, email, password) {
+function signUp(data, hash) {
+  console.log(data);
   return new Promise((resolve, reject) => {
     pool.getConnection((err, connection) => {
       if (err) {
         reject('Error connecting to the database');
       }
 
-      const query = `INSERT INTO users (name, last_name, email, password) VALUES('${name}','${lastName}','${email}','${password}')`;
+      const query = `INSERT INTO users (name, last_name, email, password) VALUES ('${data.name}','${data.lastName}','${data.email}','${hash}')`;
 
       connection.query(query, (err, results) => {
         connection.release();

@@ -9,4 +9,5 @@ module.exports = {
   express,
   bodyParser,
   environment,
+  bcrypt,
 };
