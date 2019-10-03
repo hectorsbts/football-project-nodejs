@@ -10,7 +10,7 @@ const signUp = require('./db/sign_up');
 const { getTeams, addTeam } = require('./db/footballFunctions');
 
 const app = express();
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || environment.PORT;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
