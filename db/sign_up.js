@@ -1,7 +1,6 @@
 const pool = require('./db_pool');
 
 function signUp(data, hash) {
-  console.log(data);
   return new Promise((resolve, reject) => {
     pool.getConnection((err, connection) => {
       if (err) {
