@@ -37,14 +37,12 @@ function logIn(email) {
         // release connection
         connection.release();
 
-        console.log(results);
-
         // handle errors
         if (err) {
           reject(err);
         }
 
-        resolve(results);
+        resolve(results[0]);
       });
     });
   });

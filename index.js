@@ -84,14 +84,14 @@ app.post('/users', (req, res) => {
 // login
 app.post('/login', (req, res) => {
   res.set('Content-Type', 'application/json');
-  logIn(req.body)
+  logIn(req.body.email)
     .then((data) => {
       bcrypt.compare(req.body.password, data.password, (err, match) => {
         if (err) {
           res.send(err);
         } else if (!match) {
           res.send({
-            message: 'Password incorrect',
+            message: 'Incorrect password',
           });
         } else {
           const token = jwt.encode(req.body, 'secret');
