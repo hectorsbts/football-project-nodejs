@@ -1,55 +1,73 @@
-const path = require('path');
-const express = require('express');
-const bodyParser = require('body-parser');
-const pool = require("./db_pool");
-const sign_up = require('./sign_up');
-const bcrypt = require('bcryptjs');
+const {
+  path,
+  express,
+  bodyParser,
+  environment,
+  bcrypt,
+} = require('./bootstrap');
+
+const { getTeams } = require('./db/footballFunctions');
+const { signUp } = require('./db/sign_up');
 
 const app = express();
-const port = process.env.PORT;
+const port = environment.PORT;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.get('/', (req, res) => {
-  // res.sendFile(path.join(__dirname, 'index.html'));
-  pool.getConnection((err,connection)=>{
-    res.set({"Content-Type":"application/json"})
-    if(err){
-      res.send({"Message":"Nel perro"});
-    }
-    connection.query("SELECT * FROM teams", (err,rows)=>{
-      connection.release();
-      if(err){
-        res.send({"Message":"Nel perro " + err.toString()});
-      }
-      res.send(rows);
-    });
+// get teams
+app.get('/teams', (req, res) => {
+  res.set({
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
   });
+
+  getTeams()
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      res.send(err);
+    });
 });
 
-app.post('/users',(req, res)=>{
-  const body = req.body;
-  res.set("content-type","application/json")
-  if(body.password === body.confirm_password){
-    bcrypt.hash(body.password, 5)
-    .then(hash=>{
-      sign_up(body.name, body.lastName, body.email, body.password)
-      .then((result)=>{
-        res.status(200);
-        res.send("Created");
+// add teams
+app.post('/teams', (req, res) => {
+  res.set({
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+  });
+
+  addTeams(req.body)
+    .then((result) => res.send(result))
+    .catch((err) => res.send(err));
+});
+
+app.post('/users', (req, res) => {
+  res.set('Content-Type', 'application/json');
+  
+  const { body } = req;
+  if (body.password === body.confirm_password) {
+    bcrypt
+      .hash(body.password, 5)
+      .catch((err) => {
+        res.status(500);
+        res.send(err.Message);
       })
-      .catch((err)=>{
+      .then((hash) => signUp(body.name, body.lastName, body.email, hash))
+      .then((result) => {
+        res.status(201);
+        res.send(result);
+      })
+      .catch((err) => {
         res.status(400);
-        res.send("Error: " + JSON.stringify(err));
+        res.send(err);
       });
-    }).catch((e)=>{
-      res.status(500);
-      res.send("Password error: " + e.Message);
-    });
-  }else{
+  } else {
     res.status(400);
-    res.send("Different password");
+    res.send('Different password');
   }
 });
 
