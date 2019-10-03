@@ -1,7 +1,7 @@
 const db = require('./db_pool');
 const bodyParser = require('../bootstrap');
 // const bodyParser = require('body-parser');
-const jwt = require('jsonwebtoken');
+const jwt = require('jwt-simple');
 
 function getTeams() {
   return new Promise((resolve, reject) => {
@@ -47,7 +47,7 @@ function logOn(req) {
           reject(err);
         }
         if (results.length>0){
-          let token = jwt.sign(result[0], 'secret');
+          let token = jwt.encode(result[0], 'secret');
           resolve(token);
         } else {
           resolve('User or password incorrect');
