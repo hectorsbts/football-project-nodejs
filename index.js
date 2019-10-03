@@ -1,14 +1,19 @@
-const path = require('path');
-const express = require('express');
-const bodyParser = require('body-parser');
-const { getTeams } = require('./footballFunctions');
+const {
+  path,
+  express,
+  bodyParser,
+  environment,
+} = require('./bootstrap');
+
+const { getTeams } = require('./db/footballFunctions');
 
 const app = express();
-const port = process.env.PORT;
+const port = environment.PORT;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+// get teams
 app.get('/teams', (req, res) => {
   res.set({
     'Content-Type': 'application/json',
