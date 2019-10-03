@@ -4,9 +4,10 @@ const {
   bodyParser,
   environment,
   bcrypt,
+  jwt,
 } = require('./bootstrap');
 
-const signUp = require('./db/sign_up');
+const { signUp, logIn } = require('./db/user');
 const { getTeams, addTeam } = require('./db/footballFunctions');
 
 const app = express();
@@ -78,6 +79,29 @@ app.post('/users', (req, res) => {
     res.status(400);
     res.send('Different password');
   }
+});
+
+// login
+app.post('/login', (req, res) => {
+  res.set('Content-Type', 'application/json');
+  logIn(req.body)
+    .then((data) => {
+      bcrypt.compare(req.body.password, data.password, (err, match) => {
+        if (err) {
+          res.send(err);
+        } else if (!match) {
+          res.send({
+            message: 'Password incorrect',
+          });
+        } else {
+          const token = jwt.encode(req.body, 'secret');
+          res.send(token);
+        }
+      });
+    })
+    .catch((err) => {
+      res.send(err);
+    });
 });
 
 // get images

@@ -2,6 +2,7 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
+const jwt = require('jwt-simple');
 const environment = require('./environments/environment');
 
 module.exports = {
@@ -10,4 +11,5 @@ module.exports = {
   bodyParser,
   environment,
   bcrypt,
+  jwt,
 };
