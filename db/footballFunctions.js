@@ -35,7 +35,7 @@ function logOn(req) {
 
       // make query to catch valid users
       let sql = `SELECT * FROM users 
-      WHERE email='${req.body.user}'
+      WHERE email='${req.body.email}'
       AND password='${req.body.password}'`;
 
       connection.query(sql, (err, results) => {
@@ -47,10 +47,8 @@ function logOn(req) {
           reject(err);
         }
         if (results.length>0){
-          let pass = results[0].password;
-          let token = jwt.sign(pass, 'secret');
-          results[0].password=token;
-          resolve(results[0]);
+          let token = jwt.sign(result[0], 'secret');
+          resolve(token);
         } else {
           resolve('User or password incorrect');
         }
