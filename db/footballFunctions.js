@@ -65,19 +65,55 @@ function updateTeam(teamId, newData){
         reject('Error connecting to the Database') 
       }
       
-      Object.entries(newData).forEach( teamData => {
+      let goals_in_favor = 0;
+      let goals_against = 0;
+      let goals_difference;
 
-        db.query(`UPDATE teams SET ${teamData[0]}='${teamData[1]}' WHERE id=${teamId}`, (err, results) => {
-          if(err){
-            reject(err);
-          }
+      Object.entries(newData).forEach( teamData => {
+        // GET teams TABLE COLUMNS
+        db.query(`DESCRIBE teams`, (err, result) => {
+          if(err) { reject(err) };
+          
+          result.forEach( column => {
+            // UPDATE TO teams TABLE
+            if( teamData[0] === column.Field ){
+              db.query(`UPDATE teams SET ${teamData[0]}='${teamData[1]}' WHERE id=${teamId}`, (err) => {
+                if(err){ reject(err) };
+              })
+            }
+            // UPDATE TO tournament TABLE
+            else {
+              db.query(`UPDATE tournament_games SET ${teamData[0]}=${teamData[1]} WHERE team_id=${teamId}`, (err) => {
+                if(err){ reject(err) };
+              })
+              
+              // SET goals_in_favor & goals_against
+              switch( teamData[0] ){ 
+                case 'goals_in_favor':
+                  goals_in_favor = teamData[1]
+                break;
+                case 'goals_against':
+                  goals_against = teamData[1]
+                break;
+              }
+            }
+          })
         })
-      })
+      });
+      //UPDATE TO goals_difference
+      setTimeout( () => {
+        goals_difference = ( goals_in_favor ) - ( goals_against ); 
+        console.log(goals_difference)
+        db.query(`UPDATE tournament_games SET goals_difference=${goals_difference} WHERE team_id=${teamId}`, (err) => {
+          if(err) { reject(err) };
+        });              
+      }, 1000);
+
       connection.release();
       resolve(`Team ${teamId} updated.`);
     })
   })
-}
+};
 
 module.exports = {
   getTeams,
