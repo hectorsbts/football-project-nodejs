@@ -58,6 +58,7 @@ function addTeam(team) {
   });
 }
 
+// PUT method - UPDATE TEAM & TOURNAMENT DATA
 function updateTeam(teamId, newData){
   return new Promise( (resolve, reject) => {
     db.getConnection( ( err, connection) => {
@@ -65,23 +66,26 @@ function updateTeam(teamId, newData){
         reject('Error connecting to the Database') 
       }
       
+      // goal_difference CALCULATION  
       let goals_favor = 0;
       let goals_against = 0;
       let goal_difference;
 
+      let points;
       Object.entries(newData).forEach( teamData => {
-        // GET teams TABLE COLUMNS
+        // GET TEAMS RESPECTIVE COLUMNS
         db.query(`DESCRIBE teams`, (err, result) => {
           if(err) { reject(err) };
           
           result.forEach( column => {
-            // UPDATE TO teams TABLE
+            // UPDATE TEAMS TABLE
             if( teamData[0] === column.Field ){
               db.query(`UPDATE teams SET ${teamData[0]}='${teamData[1]}' WHERE id=${teamId}`, (err) => {
                 if(err){ reject(err) };
               })
             }
-            // UPDATE TO tournament TABLE
+            
+            // UPDATE TOURNAMENT TABLE
             else {
               db.query(`UPDATE tournament_games SET ${teamData[0]}=${teamData[1]} WHERE team_id=${teamId}`, (err) => {
                 if(err){ reject(err) };
@@ -100,15 +104,52 @@ function updateTeam(teamId, newData){
           })
         })
       });
-      //UPDATE TO goals_difference
+      
+      // UPDATE GAMES PLAYED
+        db.query(`SELECT team_id, games_won, games_lost, games_tied FROM tournament_games WHERE team_id=${teamId}`, (err, result) => {
+          if(err){ reject(err) };
+
+          result.forEach( games => {
+
+            let games_played = (games.games_won) + (games.games_tied) + (games.games_lost);
+            points = (games.games_won * 3) + (games.games_tied);
+            
+            db.query(`UPDATE tournament_games SET games_played=${games_played} WHERE team_id=${teamId}`, (err) => {
+              if(err){ reject(err) };
+            })
+            // UPDATE POINTS (?)
+            db.query(`UPDATE tournament_games SET points SET=${points} WHERE team_id=${teamId}`, (err) => {
+                if(err){ reject(err) };
+            });
+          })
+        })
+
+      // UPDATE GOALS DIFFERENCE
       setTimeout( () => {
         goal_difference = ( goals_favor ) - ( goals_against ); 
-        console.log(goal_difference)
         db.query(`UPDATE tournament_games SET goal_difference=${goal_difference} WHERE team_id=${teamId}`, (err) => {
           if(err) { reject(err) };
         });              
       }, 1000);
 
+
+      // UPDATE POSITION
+      db.query(`SELECT team_id, points FROM tournament_games ORDER BY points DESC`, (err, teams) => {
+        teams.forEach( (team, position) => {
+
+          db.query(`UPDATE tournament_games SET position=${position+1} WHERE team_id=${team.team_id}`, (err) => {
+            if(err){ reject(err) };
+          })
+
+        })
+      });
+            /** This is for internal check due no GET method to tournament_games
+             * 
+             * db.query('SELECT * FROM tournament_games', (err, result) => {
+             *   console.log(result);
+             * });
+             * 
+             */
       connection.release();
       resolve(`Team ${teamId} updated.`);
     })
