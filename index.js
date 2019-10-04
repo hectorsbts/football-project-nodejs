@@ -8,7 +8,7 @@ const {
 } = require('./bootstrap');
 
 const { signUp, logIn } = require('./db/user');
-const { getTeams, addTeam } = require('./db/footballFunctions');
+const { getTeams, addTeam, updateTeam } = require('./db/footballFunctions');
 
 const app = express();
 const port = process.env.PORT || environment.PORT;
@@ -45,6 +45,18 @@ app.post('/teams', (req, res) => {
     .then((result) => res.send(result))
     .catch((err) => res.send(err));
 });
+
+// update team
+app.put('/teams/:teamId', (req, res) => {
+  
+  let teamId = Number(req.path.split('/').pop());
+  const newData = req.body;  
+  
+  updateTeam(teamId, newData)
+    .then((result) => res.status(201).send(result))
+    .catch((err) => res.send(err));
+})
+
 
 // sign up a new user
 app.post('/users', (req, res) => {

@@ -58,7 +58,29 @@ function addTeam(team) {
   });
 }
 
+function updateTeam(teamId, newData){
+  return new Promise( (resolve, reject) => {
+    db.getConnection( ( err, connection) => {
+      if(err) { 
+        reject('Error connecting to the Database') 
+      }
+      
+      Object.entries(newData).forEach( teamData => {
+
+        db.query(`UPDATE teams SET ${teamData[0]}='${teamData[1]}' WHERE id=${teamId}`, (err, results) => {
+          if(err){
+            reject(err);
+          }
+        })
+      })
+      connection.release();
+      resolve(`Team ${teamId} updated.`);
+    })
+  })
+}
+
 module.exports = {
   getTeams,
   addTeam,
+  updateTeam
 };
