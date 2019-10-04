@@ -65,9 +65,9 @@ function updateTeam(teamId, newData){
         reject('Error connecting to the Database') 
       }
       
-      let goals_in_favor = 0;
+      let goals_favor = 0;
       let goals_against = 0;
-      let goals_difference;
+      let goal_difference;
 
       Object.entries(newData).forEach( teamData => {
         // GET teams TABLE COLUMNS
@@ -89,8 +89,8 @@ function updateTeam(teamId, newData){
               
               // SET goals_in_favor & goals_against
               switch( teamData[0] ){ 
-                case 'goals_in_favor':
-                  goals_in_favor = teamData[1]
+                case 'goals_favor':
+                  goals_favor = teamData[1]
                 break;
                 case 'goals_against':
                   goals_against = teamData[1]
@@ -102,9 +102,9 @@ function updateTeam(teamId, newData){
       });
       //UPDATE TO goals_difference
       setTimeout( () => {
-        goals_difference = ( goals_in_favor ) - ( goals_against ); 
-        console.log(goals_difference)
-        db.query(`UPDATE tournament_games SET goals_difference=${goals_difference} WHERE team_id=${teamId}`, (err) => {
+        goal_difference = ( goals_favor ) - ( goals_against ); 
+        console.log(goal_difference)
+        db.query(`UPDATE tournament_games SET goal_difference=${goal_difference} WHERE team_id=${teamId}`, (err) => {
           if(err) { reject(err) };
         });              
       }, 1000);
