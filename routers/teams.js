@@ -12,10 +12,10 @@ const tokenValidator = require('../filters/tokenValidator');
 teamsRouter.put('/:id', tokenValidator);
 
 // get filters
-const teamDataValidator = require('../filters/teams');
+// const teamDataValidator = require('../filters/teams');
 
-// JSON schema validator middleware
-teamsRouter.put('/:id', teamDataValidator.updateTeamDataValidator);
+// // JSON schema validator middleware
+// teamsRouter.put('/:id', teamDataValidator.updateTeamDataValidator);
 
 // set routes
 teamsRouter.get('/', teams.getTeams);
