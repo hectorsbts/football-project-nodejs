@@ -1,13 +1,23 @@
-const pool = require('./db_pool');
+'use strict'
 
+// database operations regarding users
+const db = require('../config/db');
+
+/**
+ * signUp method
+ * add a user to the database
+ * @param {object} data user's data
+ * @param {string} hash user's password hashed
+ * @return {object} database confirmation
+ */
 function signUp(data, hash) {
   return new Promise((resolve, reject) => {
-    pool.getConnection((err, connection) => {
+    db.getConnection((err, connection) => {
       if (err) {
         reject('Error connecting to the database');
       }
 
-      const query = `INSERT INTO users (name, last_name, email, password) VALUES ('${data.name}','${data.lastName}','${data.email}','${hash}')`;
+      const query = `INSERT INTO users (name, last_name, email, password) VALUES ('${data.firstName}','${data.lastName}','${data.email}','${hash}')`;
 
       connection.query(query, (err, results) => {
         connection.release();
@@ -22,9 +32,15 @@ function signUp(data, hash) {
   });
 }
 
+/**
+ * logIn method
+ * obtain the user's password to compare it
+ * @param {string} email user's email
+ * @return {object} database record
+ */
 function logIn(email) {
   return new Promise((resolve, reject) => {
-    pool.getConnection((err, connection) => {
+    db.getConnection((err, connection) => {
       if (err) {
         reject('Error connecting to the database');
       }
@@ -48,6 +64,7 @@ function logIn(email) {
   });
 }
 
+// export user's database operations
 module.exports = {
   signUp,
   logIn,

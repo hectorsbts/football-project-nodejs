@@ -1,126 +1,47 @@
-const {
-  path,
-  express,
-  bodyParser,
-  environment,
-  bcrypt,
-  jwt,
-} = require('./bootstrap');
+'use strict'
 
-const { signUp, logIn } = require('./db/user');
-const { getTeams, addTeam, updateTeam } = require('./db/footballFunctions');
+// load configurations
+require('./loadenv');
+require('./config/db');
 
+// load modules
+const bodyParser = require('body-parser');
+const express = require('express');
+const log4js = require('log4js');
+const apiApp = require('./config/api');
+const config = require('./config/constants');
+
+const logger = log4js.getLogger('index.js');
+
+// boot express
 const app = express();
-const port = process.env.PORT || environment.PORT;
+const router = express.Router();
 
+// define the level of logs
+logger.level = 'debug';
+
+// assign middlewares
+app.use(router);
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
 
-// get teams
-app.get('/teams', (req, res) => {
-  res.set({
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
-  });
-
-  getTeams()
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      res.send(err);
-    });
+// access-control-allow
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  // give the url of the request to the response
+  res.url = req.url;
+  next();
 });
 
-// add teams
-app.post('/teams', (req, res) => {
-  res.set({
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
-  });
+app.use(bodyParser.json({ limit: '25MB' }));
 
-  addTeam(req.body)
-    .then((result) => res.send(result))
-    .catch((err) => res.send(err));
+// establish the main path for the API
+app.use('/api', apiApp);
+
+// set the listening port
+app.listen(config.APP_PORT, () => {
+  logger.info(`Listening to port ${config.APP_PORT} in ${config.ENV} environment`);
 });
 
-// update team
-app.put('/teams/:teamId', (req, res) => {
-  
-  let teamId = Number(req.path.split('/').pop());
-  const newData = req.body;  
-  
-  updateTeam(teamId, newData)
-    .then((result) => res.status(201).send(result))
-    .catch((err) => res.send(err));
-})
-
-
-// sign up a new user
-app.post('/users', (req, res) => {
-  res.set('Content-Type', 'application/json');
-  
-  const { body } = req;
-  if (body.password === body.confirm_password) {
-    bcrypt.genSalt(10, (err, salt) => {
-      if (err) {
-        res.status(400);
-        res.send(err);
-      }
-
-      bcrypt.hash(body.password, salt, (err, hash) => {
-        if (err) {
-          res.status(400);
-          res.send('Error generating the hash');
-        }
-
-        signUp(body, hash)
-          .then((result) => {
-            res.status(201);
-            res.send(result);
-          })
-          .catch((err) => {
-            res.status(400);
-            res.send(err);
-          });
-      });
-    });
-  } else {
-    res.status(400);
-    res.send('Different password');
-  }
-});
-
-// login
-app.post('/login', (req, res) => {
-  res.set('Content-Type', 'application/json');
-  logIn(req.body.email)
-    .then((data) => {
-      bcrypt.compare(req.body.password, data.password, (err, match) => {
-        if (err) {
-          res.send(err);
-        } else if (!match) {
-          res.send({
-            message: 'Incorrect password',
-          });
-        } else {
-          const token = jwt.encode(req.body, 'secret');
-          res.send(token);
-        }
-      });
-    })
-    .catch((err) => {
-      res.send(err);
-    });
-});
-
-// get images
-app.get('/assets/teamlogos/:img', (req, res) => {
-  res.sendFile(path.join(__dirname, 'assets/teamlogos', req.params.img));
-});
-
-app.listen(port, () => {
-  console.log(`Node server running on ${port}`);
-});
+module.exports = app;
