@@ -40,7 +40,7 @@ app.use(bodyParser.json({ limit: '25MB' }));
 app.use('/api', apiApp);
 
 // set the listening port
-app.listen(process.env.PORT || config.APP_PORT, () => {
+app.listen(process.env.PORT, () => {
   logger.info(`Listening to port ${config.APP_PORT} in ${config.ENV} environment`);
 });
 
